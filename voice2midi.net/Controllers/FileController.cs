@@ -119,6 +119,19 @@ namespace voice2midiAPI.Controllers
         }
 
 
+        // GET: api/files/{id}/download
+        [HttpGet("{id}/download")]
+        public async Task<IActionResult> DownloadFile(long id)
+        {
+            var file = await _context.Files.FindAsync(id);
+
+            if (file == null)
+            {
+                return NotFound();
+            }
+
+            return File(file.Data, System.Net.Mime.MediaTypeNames.Application.Octet, file.Filename);
+        }
 
         /*
         [HttpGet]

@@ -38,13 +38,20 @@ namespace voice2midiAPI.Models
 
             using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
+                Console.WriteLine("=>fullBuffer.Length" + fullBuffer.Length);
                 do
                 {
                     readSize = await stream.ReadAsync(buffer, 0, bufferSize);
-                    totalReadSize += readSize;
-                    fullBuffer = fullBuffer.Concat(buffer).ToArray();
+                    Console.WriteLine("=>READSIZE " + readSize);
+                    if (readSize > 0)
+                    {
+                        Array.Resize(ref fullBuffer, totalReadSize + readSize);
+                        Buffer.BlockCopy(buffer, 0, fullBuffer, totalReadSize, readSize);
+                        totalReadSize += readSize;
+                    }
                 }
                 while (readSize > 0);
+                Console.WriteLine("=>fullBuffer.Length" + fullBuffer.Length);
             }
 
             Console.WriteLine($"Total Bytes read : {totalReadSize} bytes");
