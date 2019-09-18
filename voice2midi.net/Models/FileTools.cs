@@ -44,11 +44,9 @@ namespace voice2midiAPI.Models
 
             using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
-                Console.WriteLine("=>fullBuffer.Length" + fullBuffer.Length);
                 do
                 {
                     readSize = await stream.ReadAsync(buffer, 0, bufferSize);
-                    Console.WriteLine("=>READSIZE " + readSize);
                     if (readSize > 0)
                     {
                         Array.Resize(ref fullBuffer, totalReadSize + readSize);
@@ -57,10 +55,7 @@ namespace voice2midiAPI.Models
                     }
                 }
                 while (readSize > 0);
-                Console.WriteLine("=>fullBuffer.Length" + fullBuffer.Length);
             }
-
-            Console.WriteLine($"Total Bytes read : {totalReadSize} bytes");
 
             fileModel.Data = fullBuffer;
 

@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using voice2midiAPI.Models;
+using voice2midiAPI.net.Managers;
 using voice2midiAPI.net.Tools;
 
 namespace voice2midiAPI.Controllers
@@ -20,8 +19,8 @@ namespace voice2midiAPI.Controllers
         }
 
         // GET: api/transcriber/generate/{id}
-        [HttpGet("generate/{id}")]
-        public async Task<IActionResult> GenerateFile(long id)
+        [HttpGet("generate/midi/{id}")]
+        public async Task<IActionResult> GenerateMidiFile(long id)// only .wav to .mid
         {
             string filePathIn = await FileTools.ExtractToTmpFile(_context, id, ".wav");
 
@@ -39,6 +38,29 @@ namespace voice2midiAPI.Controllers
 
             var fileOutId = await FileTools.SaveToDB(_context, filePathOut, id);
             
+            return Ok(new { filePathIn, filePathOut, fileOutId });
+        }
+
+        // GET: api/transcriber/generate/{id}
+        [HttpGet("generate/mp3/{id}")]
+        public async Task<IActionResult> GenerateMp3File(long id)// only .wav to .mid
+        {
+            string filePathIn = await FileTools.ExtractToTmpFile(_context, id, ".mid");
+
+            if (filePathIn == null)
+            {
+                return BadRequest();
+            }
+
+            string filePathOut = filePathIn + ".mp3";
+
+            Console.WriteLine(filePathIn);
+
+            var mp3Converter = new Mp3ConverterManager(true);
+            await mp3Converter.run(filePathIn, filePathOut);
+
+            var fileOutId = await FileTools.SaveToDB(_context, filePathOut, id);
+
             return Ok(new { filePathIn, filePathOut, fileOutId });
         }
     }
