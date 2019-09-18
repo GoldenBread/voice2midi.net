@@ -41,13 +41,5 @@ namespace voice2midiAPI.Controllers
             
             return Ok(new { filePathIn, filePathOut, fileOutId });
         }
-
-        [HttpGet]// To remove
-        public async Task<IActionResult> GenerateTestAsync()
-        {
-            var fileOutId = await FileTools.SaveToDB(_context, @"/var/folders/9c/z6130hm95tj318dnwm3n4yhr0000gn/T/a61a81de-6608-4d61-b664-84aff13b9026.wav.mid");
-
-            return Ok(new { fileOutId });
-        }
     }
 }

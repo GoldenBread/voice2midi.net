@@ -18,23 +18,9 @@ namespace voice2midiAPI.Controllers
     {
         private readonly FileContext _context;
 
-        //        [HttpPost]
-        //        public upload
-
         public FilesController(FileContext context)// injection de dépendance pour le contexte de DB
         {
             _context = context;
-            /*
-             * Garbage
-             * 
-            if (context.Files.Count() == 0)
-            {
-                // Créer une nouvelle collection File si il n'y en a pas.
-                // Sans la condition, créer un "File" supplémentaire à chaque nouvelle requête.
-
-                _context.Files.Add(new FileModel { Author = "Moi" });
-                _context.SaveChanges();
-            }*/
         }
 
         // GET: api/files
@@ -149,13 +135,5 @@ namespace voice2midiAPI.Controllers
                     SourceId = x.SourceId
                 }).ToListAsync();
         }
-
-        /*
-        [HttpGet]
-        public ActionResult<IEnumerable<string>> uploadTestGet()
-        {
-            return new string[] { "value1", "valueOui" };
-        }*/
-
     }
 }

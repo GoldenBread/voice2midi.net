@@ -120,10 +120,5 @@ namespace voice2midiAPI.Models
             return Guid.NewGuid().ToString() + extension;
         }
 
-        /*
-        public static async Task<File> ExtractFileFromDB(FileContext context, long id)
-        {
-            return new File
-        }*/
     }
 }
