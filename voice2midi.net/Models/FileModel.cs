@@ -10,13 +10,12 @@ namespace voice2midiAPI.Models
         public FileModel(
             string filename,
             string author,
-            byte[] data,
             string fileExtension)// generated
         {
             Filename = filename;
             CreationDate = DateTime.UtcNow;
             Author = author;
-            Data = data;
+            Data = null;
             FileExtension = fileExtension;
         }
 

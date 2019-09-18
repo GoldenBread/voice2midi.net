@@ -34,26 +34,6 @@ namespace voice2midiAPI.Controllers
 
             Console.WriteLine(filePathIn);
 
-            /*
-            ProcessStartInfo start = new ProcessStartInfo();
-            start.FileName = @"/Users/thierry/Projects/voice2midi_microservice_simplified/audio_to_midi_melodia.py";
-            start.Arguments = filePathIn + " " + filePathOut + " 60";
-
-
-            // Redirect output
-            start.UseShellExecute = false;
-            start.RedirectStandardOutput = true;
-
-            using (Process process = Process.Start(start))
-            {
-                // Read output
-                using (StreamReader reader = process.StandardOutput)
-                {
-                    string result = await reader.ReadToEndAsync();
-                    Console.WriteLine(result);
-                }
-            }
-            */
             var melodia = new MelodiaManager(true);
             await melodia.runMelodia(filePathIn, filePathOut);
 

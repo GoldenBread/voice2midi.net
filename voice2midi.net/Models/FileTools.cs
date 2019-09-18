@@ -10,7 +10,7 @@ namespace voice2midiAPI.Models
     {
         public static async Task<long> SaveToDB(FileContext _context, IFormFile file)
         {
-            var fileModel = new FileModel();
+            var fileModel = new FileModel(file.FileName, null, Path.GetExtension(file.FileName));
             fileModel.CreationDate = DateTime.UtcNow;
             fileModel.FileExtension = Path.GetExtension(file.FileName);
 
@@ -28,13 +28,12 @@ namespace voice2midiAPI.Models
 
         public static async Task<long> SaveToDB(FileContext _context, string filePath)
         {
-            var fileModel = new FileModel();
+            var fileModel = new FileModel(Path.GetFileName(filePath), null, Path.GetExtension(filePath));
 
             int bufferSize = 512;
             byte[] buffer = new byte[bufferSize];
             int readSize = 0;
             int totalReadSize = 0;
-            //byte[] fullBuffer = new byte[blockSize];
             byte[] fullBuffer = new byte[0];// Increase of size over iterations
 
             using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
@@ -99,8 +98,13 @@ namespace voice2midiAPI.Models
         public static string GetTempFileNameWithExtension(string extension)// Pas d'extension method possible (Path = static)
         {
             var pathStr = Path.GetTempPath();
-            var filename = Guid.NewGuid().ToString() + extension;
+            var filename = GetRndFilename(extension);
             return Path.Combine(pathStr, filename);
+        }
+
+        public static string GetRndFilename(string extension)
+        {
+            return Guid.NewGuid().ToString() + extension;
         }
 
         /*
