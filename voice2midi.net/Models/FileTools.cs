@@ -8,11 +8,12 @@ namespace voice2midiAPI.Models
 {
     public class FileTools// Méthodes de manipulations des datas des fichiers avec la DB
     {
-        public static async Task<long> SaveToDB(FileContext _context, IFormFile file)
+        public static async Task<long> SaveToDB(FileContext _context, IFormFile file, long sourceId = -1)
         {
             var fileModel = new FileModel(file.FileName, null, Path.GetExtension(file.FileName));
             fileModel.CreationDate = DateTime.UtcNow;
             fileModel.FileExtension = Path.GetExtension(file.FileName);
+            fileModel.SourceId = sourceId;
 
             using (var memoryStream = new MemoryStream())
             {
@@ -23,12 +24,17 @@ namespace voice2midiAPI.Models
             _context.Files.Add(fileModel);
             await _context.SaveChangesAsync();
 
+            // Get the newly created Id and set it as source
+            fileModel.SourceId = fileModel.Id;
+            await _context.SaveChangesAsync();
+
             return fileModel.Id;
         }
 
-        public static async Task<long> SaveToDB(FileContext _context, string filePath)
+        public static async Task<long> SaveToDB(FileContext _context, string filePath, long sourceId = -1)
         {
             var fileModel = new FileModel(Path.GetFileName(filePath), null, Path.GetExtension(filePath));
+            fileModel.SourceId = sourceId;
 
             int bufferSize = 512;
             byte[] buffer = new byte[bufferSize];

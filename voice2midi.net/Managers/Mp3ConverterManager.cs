@@ -2,21 +2,21 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using voice2midiAPI.net.Managers;
 
-namespace voice2midiAPI.net.Tools
+namespace voice2midiAPI.net.Managers
 {
-    public class MelodiaManager : ExternalManager// Melodia, transcriber script that convert .wav to .midi
+    public class Mp3ConverterManager : ExternalManager
     {
-        public MelodiaManager(bool redirectStdOutput = true):
+        public Mp3ConverterManager(bool redirectStdOutput = true):
             base(redirectStdOutput)
         {
-            PStartInfo.FileName = @"/Users/thierry/Projects/voice2midi_microservice_simplified/audio_to_midi_melodia.py";
+            PStartInfo.FileName = @"/usr/local/bin/fluidsynth";
+            PStartInfo.Arguments = @"-i /app/GeneralUser_GS.sf2 ";
         }
 
         public override async Task run(string FilePathIn, string FilePathOut)
         {
-            PStartInfo.Arguments = FilePathIn + " " + FilePathOut + " 60";
+            PStartInfo.Arguments += FilePathIn + " -F " + FilePathOut;
 
             using (Process process = Process.Start(PStartInfo))
             {
@@ -28,6 +28,5 @@ namespace voice2midiAPI.net.Tools
                 }
             }
         }
-
     }
 }

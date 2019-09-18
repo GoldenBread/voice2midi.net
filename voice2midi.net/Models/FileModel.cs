@@ -17,6 +17,7 @@ namespace voice2midiAPI.Models
             Author = author;
             Data = null;
             FileExtension = fileExtension;
+            SourceId = -1;
         }
 
         public long Id { get; set; }
@@ -25,6 +26,7 @@ namespace voice2midiAPI.Models
         public string Author { get; set; }
         public byte[] Data { get; set; }
         public string FileExtension { get; set; }
+        public long SourceId { get; set; }
 
     }
 }

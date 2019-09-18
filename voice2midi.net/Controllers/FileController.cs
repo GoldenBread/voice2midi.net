@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using voice2midiAPI.Models;
+using voice2midiAPI.net.Models;
 
 namespace voice2midiAPI.Controllers
 {
@@ -131,6 +132,22 @@ namespace voice2midiAPI.Controllers
             }
 
             return File(file.Data, System.Net.Mime.MediaTypeNames.Application.Octet, file.Filename);
+        }
+
+        [HttpGet("{id}/list")]
+        public async Task<ActionResult<IEnumerable<FileModelShort>>> FileList(long id)
+        {
+            return await _context.Files
+                .Where(files => files.SourceId == id)
+                .Select(x => new FileModelShort
+                {
+                    Id = x.Id,
+                    Filename = x.Filename,
+                    CreationDate = x.CreationDate,
+                    Author = x.Author,
+                    FileExtension = x.FileExtension,
+                    SourceId = x.SourceId
+                }).ToListAsync();
         }
 
         /*

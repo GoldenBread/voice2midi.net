@@ -37,7 +37,7 @@ namespace voice2midiAPI.Controllers
             var melodia = new MelodiaManager(true);
             await melodia.runMelodia(filePathIn, filePathOut);
 
-            var fileOutId = await FileTools.SaveToDB(_context, filePathOut);
+            var fileOutId = await FileTools.SaveToDB(_context, filePathOut, id);
             
             return Ok(new { filePathIn, filePathOut, fileOutId });
         }
