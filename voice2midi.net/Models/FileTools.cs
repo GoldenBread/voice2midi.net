@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -29,10 +30,27 @@ namespace voice2midiAPI.Models
         {
             var fileModel = new FileModel();
 
-            using (var stream = new FileStream(filePath, FileMode.Open))
+            int bufferSize = 512;
+            byte[] buffer = new byte[bufferSize];
+            int readSize = 0;
+            int totalReadSize = 0;
+            //byte[] fullBuffer = new byte[blockSize];
+            byte[] fullBuffer = new byte[0];// Increase of size over iterations
+
+            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
-                await stream.ReadAsync(fileModel.Data);
+                do
+                {
+                    readSize = await stream.ReadAsync(buffer, 0, bufferSize);
+                    totalReadSize += readSize;
+                    fullBuffer = fullBuffer.Concat(buffer).ToArray();
+                }
+                while (readSize > 0);
             }
+
+            Console.WriteLine($"Total Bytes read : {totalReadSize} bytes");
+
+            fileModel.Data = fullBuffer;
 
             _context.Files.Add(fileModel);
             await _context.SaveChangesAsync();
@@ -54,9 +72,14 @@ namespace voice2midiAPI.Models
             return filePath;
         }
 
-        public static async Task<string> ExtractToTmpFile(FileContext context, long Id)
+        public static async Task<string> ExtractToTmpFile(FileContext context, long Id, string checkExtension = null)
         {
             var file = await context.Files.FindAsync(Id);
+
+            if (checkExtension != null && file.FileExtension != checkExtension)// Usually to avoid melodia not .wav file as input
+            {
+                return null;
+            }
 
             var filePath = GetTempFileNameWithExtension(file.FileExtension);
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using voice2midiAPI.Models;
+using voice2midiAPI.net.Tools;
 
 namespace voice2midiAPI.Controllers
 {
@@ -22,11 +23,18 @@ namespace voice2midiAPI.Controllers
         [HttpGet("generate/{id}")]
         public async Task<IActionResult> GenerateFile(long id)
         {
-            string filePathIn = await FileTools.ExtractToTmpFile(_context, id);
+            string filePathIn = await FileTools.ExtractToTmpFile(_context, id, ".wav");
+
+            if (filePathIn == null)
+            {
+                return BadRequest();
+            }
+
             string filePathOut = filePathIn + ".mid";
 
             Console.WriteLine(filePathIn);
 
+            /*
             ProcessStartInfo start = new ProcessStartInfo();
             start.FileName = @"/Users/thierry/Projects/voice2midi_microservice_simplified/audio_to_midi_melodia.py";
             start.Arguments = filePathIn + " " + filePathOut + " 60";
@@ -45,13 +53,16 @@ namespace voice2midiAPI.Controllers
                     Console.WriteLine(result);
                 }
             }
+            */
+            var melodia = new MelodiaManager(true);
+            await melodia.runMelodia(filePathIn, filePathOut);
 
             var fileOutId = await FileTools.SaveToDB(_context, filePathOut);
-
+            
             return Ok(new { filePathIn, filePathOut, fileOutId });
         }
 
-        [HttpGet]
+        [HttpGet]// To remove
         public async Task<IActionResult> GenerateTestAsync()
         {
             var fileOutId = await FileTools.SaveToDB(_context, @"/var/folders/9c/z6130hm95tj318dnwm3n4yhr0000gn/T/a61a81de-6608-4d61-b664-84aff13b9026.wav.mid");
