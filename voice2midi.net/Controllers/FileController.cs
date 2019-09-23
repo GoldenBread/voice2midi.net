@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -121,9 +119,9 @@ namespace voice2midiAPI.Controllers
         }
 
         [HttpGet("{id}/list")]
-        public async Task<ActionResult<IEnumerable<FileModelShort>>> FileList(long id)
+        public ActionResult<IEnumerable<FileModelShort>> FileSourceList(long id)
         {
-            return await _context.Files
+            return _context.Files
                 .Where(files => files.SourceId == id)
                 .Select(x => new FileModelShort
                 {
@@ -133,7 +131,24 @@ namespace voice2midiAPI.Controllers
                     Author = x.Author,
                     FileExtension = x.FileExtension,
                     SourceId = x.SourceId
-                }).ToListAsync();
+                }).ToList();
+        }
+
+        [HttpGet("list")]
+        public IQueryable<IEnumerable<FileModelShort>> FileList()
+        {
+            return _context.Files
+                .Select(x => new FileModelShort
+                {
+                    Id = x.Id,
+                    Filename = x.Filename,
+                    CreationDate = x.CreationDate,
+                    Author = x.Author,
+                    FileExtension = x.FileExtension,
+                    SourceId = x.SourceId
+                })
+                .GroupBy(files => files.SourceId)
+                .Select(x => x.ToList());
         }
     }
 }

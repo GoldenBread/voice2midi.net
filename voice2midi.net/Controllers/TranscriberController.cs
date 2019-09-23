@@ -47,6 +47,8 @@ namespace voice2midiAPI.Controllers
         {
             string filePathIn = await FileTools.ExtractToTmpFile(_context, id, ".mid");
 
+            var srcFile = await _context.Files.FindAsync(id);
+
             if (filePathIn == null)
             {
                 return BadRequest();
@@ -59,7 +61,7 @@ namespace voice2midiAPI.Controllers
             var mp3Converter = new Mp3ConverterManager(true);
             await mp3Converter.run(filePathIn, filePathOut);
 
-            var fileOutId = await FileTools.SaveToDB(_context, filePathOut, id);
+            var fileOutId = await FileTools.SaveToDB(_context, filePathOut, srcFile.SourceId);
 
             return Ok(new { filePathIn, filePathOut, fileOutId });
         }
