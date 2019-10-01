@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using voice2midiAPI.Models;
+using voice2midiAPI.net.Models;
 
 namespace voice2midiAPI.Controllers
 {
@@ -17,23 +16,9 @@ namespace voice2midiAPI.Controllers
     {
         private readonly FileContext _context;
 
-        //        [HttpPost]
-        //        public upload
-
         public FilesController(FileContext context)// injection de dépendance pour le contexte de DB
         {
             _context = context;
-            /*
-             * Garbage
-             * 
-            if (context.Files.Count() == 0)
-            {
-                // Créer une nouvelle collection File si il n'y en a pas.
-                // Sans la condition, créer un "File" supplémentaire à chaque nouvelle requête.
-
-                _context.Files.Add(new FileModel { Author = "Moi" });
-                _context.SaveChanges();
-            }*/
         }
 
         // GET: api/files
@@ -119,13 +104,51 @@ namespace voice2midiAPI.Controllers
         }
 
 
-
-        /*
-        [HttpGet]
-        public ActionResult<IEnumerable<string>> uploadTestGet()
+        // GET: api/files/{id}/download
+        [HttpGet("{id}/download")]
+        public async Task<IActionResult> DownloadFile(long id)
         {
-            return new string[] { "value1", "valueOui" };
-        }*/
+            var file = await _context.Files.FindAsync(id);
 
+            if (file == null)
+            {
+                return NotFound();
+            }
+
+            return File(file.Data, System.Net.Mime.MediaTypeNames.Application.Octet, file.Filename);
+        }
+
+        [HttpGet("{id}/list")]
+        public ActionResult<IEnumerable<FileModelShort>> FileSourceList(long id)
+        {
+            return _context.Files
+                .Where(files => files.SourceId == id)
+                .Select(x => new FileModelShort
+                {
+                    Id = x.Id,
+                    Filename = x.Filename,
+                    CreationDate = x.CreationDate,
+                    Author = x.Author,
+                    FileExtension = x.FileExtension,
+                    SourceId = x.SourceId
+                }).ToList();
+        }
+
+        [HttpGet("list")]
+        public IQueryable<IEnumerable<FileModelShort>> FileList()
+        {
+            return _context.Files
+                .Select(x => new FileModelShort
+                {
+                    Id = x.Id,
+                    Filename = x.Filename,
+                    CreationDate = x.CreationDate,
+                    Author = x.Author,
+                    FileExtension = x.FileExtension,
+                    SourceId = x.SourceId
+                })
+                .GroupBy(files => files.SourceId)
+                .Select(x => x.ToList());
+        }
     }
 }

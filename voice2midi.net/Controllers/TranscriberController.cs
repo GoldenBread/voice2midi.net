@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using voice2midiAPI.Models;
+using voice2midiAPI.net.Managers;
+using voice2midiAPI.net.Tools;
 
 namespace voice2midiAPI.Controllers
 {
@@ -19,44 +19,51 @@ namespace voice2midiAPI.Controllers
         }
 
         // GET: api/transcriber/generate/{id}
-        [HttpGet("generate/{id}")]
-        public async Task<IActionResult> GenerateFile(long id)
+        [HttpGet("generate/midi/{id}")]
+        public async Task<IActionResult> GenerateMidiFile(long id)// only .wav to .mid
         {
-            string filePathIn = await FileTools.ExtractToTmpFile(_context, id);
+            string filePathIn = await FileTools.ExtractToTmpFile(_context, id, ".wav");
+
+            if (filePathIn == null)
+            {
+                return BadRequest();
+            }
+
             string filePathOut = filePathIn + ".mid";
 
             Console.WriteLine(filePathIn);
 
-            ProcessStartInfo start = new ProcessStartInfo();
-            start.FileName = @"/Users/thierry/Projects/voice2midi_microservice_simplified/audio_to_midi_melodia.py";
-            start.Arguments = filePathIn + " " + filePathOut + " 60";
+            var melodia = new MelodiaManager(true);
+            await melodia.run(filePathIn, filePathOut);
 
-
-            // Redirect output
-            start.UseShellExecute = false;
-            start.RedirectStandardOutput = true;
-
-            using (Process process = Process.Start(start))
-            {
-                // Read output
-                using (StreamReader reader = process.StandardOutput)
-                {
-                    string result = await reader.ReadToEndAsync();
-                    Console.WriteLine(result);
-                }
-            }
-
-            var fileOutId = await FileTools.SaveToDB(_context, filePathOut);
-
+            var fileOutId = await FileTools.SaveToDB(_context, filePathOut, id);
+            
             return Ok(new { filePathIn, filePathOut, fileOutId });
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GenerateTestAsync()
+        // GET: api/transcriber/generate/{id}
+        [HttpGet("generate/mp3/{id}")]
+        public async Task<IActionResult> GenerateMp3File(long id)// only .wav to .mid
         {
-            var fileOutId = await FileTools.SaveToDB(_context, @"/var/folders/9c/z6130hm95tj318dnwm3n4yhr0000gn/T/a61a81de-6608-4d61-b664-84aff13b9026.wav.mid");
+            string filePathIn = await FileTools.ExtractToTmpFile(_context, id, ".mid");
 
-            return Ok(new { fileOutId });
+            var srcFile = await _context.Files.FindAsync(id);
+
+            if (filePathIn == null)
+            {
+                return BadRequest();
+            }
+
+            string filePathOut = filePathIn + ".mp3";
+
+            Console.WriteLine(filePathIn);
+
+            var mp3Converter = new Mp3ConverterManager(true);
+            await mp3Converter.run(filePathIn, filePathOut);
+
+            var fileOutId = await FileTools.SaveToDB(_context, filePathOut, srcFile.SourceId);
+
+            return Ok(new { filePathIn, filePathOut, fileOutId });
         }
     }
 }
